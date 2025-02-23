@@ -63,7 +63,7 @@ extern ConVar tf_nav_in_combat_range;
 
 #define SENTRYGUN_SAPPER_OWNER_DAMAGE_MODIFIER	0.66f
 
-#define SENTRYGUN_MAX_LEVEL_MINI			1
+#define SENTRYGUN_MAX_LEVEL_MINI			3
 #define MINI_SENTRY_SCALE			0.75f
 #define DISPOSABLE_SCALE			0.65f
 #define SMALL_SENTRY_SCALE			0.80f

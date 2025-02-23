@@ -348,7 +348,7 @@ public:
 	Vector GetBuildCenterOfMass() { return m_vecBuildCenterOfMass; }
 protected:
 
-	virtual bool CanBeUpgraded() const { return !( IsDisposableBuilding() || IsMiniBuilding() ); }
+	virtual bool CanBeUpgraded() const { return !IsDisposableBuilding(); }
 	
 	virtual int  GetUpgradeMetalRequired();
 

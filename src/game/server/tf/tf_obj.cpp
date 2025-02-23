@@ -2922,7 +2922,7 @@ bool CBaseObject::CanBeUpgraded( CTFPlayer *pPlayer )
 	if ( IsUpgrading() )
 		return false;
 
-	if ( IsMiniBuilding() || IsDisposableBuilding() )
+	if ( IsDisposableBuilding() )
 		return false;
 
 	// only engineers

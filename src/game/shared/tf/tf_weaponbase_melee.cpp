@@ -23,6 +23,7 @@
 #include "haptics/ihaptics.h"
 #endif
 
+extern ConVar tf_autobalance_xp_bonus;
 ConVar tf_weapon_criticals_melee( "tf_weapon_criticals_melee", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Controls random crits for melee weapons. 0 - Melee weapons do not randomly crit. 1 - Melee weapons can randomly crit only if tf_weapon_criticals is also enabled. 2 - Melee weapons can always randomly crit regardless of the tf_weapon_criticals setting." );
 
 //=============================================================================
@@ -953,6 +954,62 @@ void CTFWeaponBaseMelee::DoMeleeDamage( CBaseEntity* ent, trace_t& trace, float 
 			EmitSound( filter, entindex(), "Powerup.Knockout_Melee_Hit" );
 			pVictimPlayer->ApplyGenericPushbackImpulse( vecDir * 400.0f, pPlayer );
 		}
+	}
+
+	CTFPlayer* Player = ToTFPlayer(ent);
+
+	int autoBalance = 0;
+    CALL_ATTRIB_HOOK_INT_ON_OTHER(pPlayer->GetActiveWeapon(), autoBalance, auto_balance_on_kill);
+	//Msg("Debug: %d\n", autoBalance);
+	
+	if (Player && autoBalance)
+	{
+		if (Player->GetHealth() > 0) {
+			//Msg("Debug: Too Much HP.\n");
+			return;
+		}
+
+		CMatchInfo* pMatch = GTFGCClientSystem()->GetLiveMatch();
+
+		int m_iLightestTeam = (Player->GetTeamNumber() == TF_TEAM_RED) ? TF_TEAM_BLUE : TF_TEAM_RED;
+
+		if (pMatch)
+		{
+			CSteamID steamID;
+			Player->GetSteamID(&steamID);
+
+			// We're going to give the switching player a bonus pool of XP. This should encourage
+			// them to keep playing to earn what's in the pool, rather than just quit after getting
+			// a big payout
+			if (!pMatch->BSentResult())
+			{
+				pMatch->GiveXPBonus(steamID, CMsgTFXPSource_XPSourceType_SOURCE_AUTOBALANCE_BONUS, 1, tf_autobalance_xp_bonus.GetInt() / 4);
+			}
+
+			GTFGCClientSystem()->ChangeMatchPlayerTeam(steamID, TFGameRules()->GetGCTeamForGameTeam(m_iLightestTeam));
+		}
+
+
+		Player->ChangeTeam(m_iLightestTeam, false, false, true);
+		Player->ForceRespawn();
+		Player->SetLastAutobalanceTime(gpGlobals->curtime);
+
+		IGameEvent* event = gameeventmanager->CreateEvent("teamplay_teambalanced_player");
+		if (event)
+		{
+			event->SetInt("player", Player->entindex());
+			event->SetInt("team", m_iLightestTeam);
+			gameeventmanager->FireEvent(event);
+		}
+
+		// tell people that we've switched this player
+		CReliableBroadcastRecipientFilter filter;
+		filter.RemoveRecipient(Player);
+		UTIL_ClientPrintFilter(filter, HUD_PRINTTALK, "#game_player_was_team_balanced", Player->GetPlayerName());
+
+		// let the player know what happened
+		const char* pszTeam = (m_iLightestTeam == TF_TEAM_RED) ? "#TF_RedTeam_Name" : "#TF_BlueTeam_Name";
+		ClientPrint(Player, HUD_PRINTTALK, (pMatch ? "#TF_Autobalance_TeamChangeDone_Match" : "#TF_Autobalance_TeamChangeDone"), pszTeam, CFmtStr("%d", tf_autobalance_xp_bonus.GetInt()));
 	}
 
 #endif

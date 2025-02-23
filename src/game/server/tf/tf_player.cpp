@@ -6881,7 +6881,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 			}
 		}
 		 
-		bool bCivilianOkay = false;
+		bool bCivilianOkay = true;
 
 		if ( !bCivilianOkay && ( i >= TF_LAST_NORMAL_CLASS ) )
 		{
@@ -6902,7 +6902,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 		// The player has selected Random class...so let's pick one for them.
 		do{
 			// Don't let them be the same class twice in a row
-			iClass = random->RandomInt( TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS - 1 ); // -1 to remove the civilian from the randomness
+			iClass = random->RandomInt( TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS ); // -1 to remove the civilian from the randomness
 			iTries--;
 		} while( iClass == GetPlayerClass()->GetClassIndex() || (iTries > 0 && !TFGameRules()->CanPlayerChooseClass(this,iClass)) );
 
@@ -16037,7 +16037,10 @@ bool CTFPlayer::SayAskForBall()
 	if ( !TFGameRules() || !TFGameRules()->IsPasstimeMode() 
 		|| ( m_Shared.AskForBallTime() > gpGlobals->curtime ) )
 	{
-		return false;
+		CBroadcastRecipientFilter filter; // This will include all players
+		filter.MakeReliable();
+		this->EmitSound(filter, entindex(), "Passtime.AskForBall");
+		return true;
 	}
 
 	CPasstimeBall *pBall = g_pPasstimeLogic->GetBall();
