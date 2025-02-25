@@ -23,6 +23,7 @@
 #include "tf_logic_player_destruction.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include "tf_obj_sapper.h"
 #include "tier0/memdbgon.h"
 
 // Ground placed version
@@ -111,7 +112,7 @@ static Vector findValidPlacement()
 		int new_position_z = RandomInt(-1000, 20000);
 
 		newPosition = Vector(new_position_x, new_position_y, new_position_z);
-		Msg("%d, %d, %d\n", new_position_x, new_position_y, new_position_z);
+		//Msg("%d, %d, %d\n", new_position_x, new_position_y, new_position_z);
 		attempts++;
 	} while (!isPlacementValid(newPosition) && attempts < maxAttempts);
 
@@ -962,10 +963,14 @@ void CObjectTeleporter::RecieveTeleportingPlayer( CTFPlayer* pTeleportingPlayer 
 		return;
 
 	Vector newPosition;
+	int doRandomTeleport = 0;
 
-	int doRandomTeleport = 1;
-	Msg("Teleport: %d\n", doRandomTeleport);
-
+	if (HasSapper()) {
+		const char* pName = GetSapper()->GetBuilder()->GetPlayerName();
+		CTFWeaponBase* pSapper = GetSapper()->GetBuilder()->Weapon_GetWeaponByType(TF_WPN_TYPE_BUILDING);
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(pSapper, doRandomTeleport, sapper_random_teleport_position);
+		Msg("PlayerName: %s\nSapper: %s\n", pName, pSapper->GetClassname());
+	}
 	if (doRandomTeleport)
 	{
 		newPosition = findValidPlacement();

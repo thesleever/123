@@ -520,3 +520,5 @@ game/mod_tf/ServerConfig.vdf
 game/mod_hl2mp/steam.inf
 /game/mod_hl2mp
 /.idea
+/src/enc_temp_folder
+/src/enc_temp_folder

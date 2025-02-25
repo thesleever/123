@@ -2610,22 +2610,28 @@ bool CBaseObject::IsPlasmaDisabled( void )
 }
 
 //-----------------------------------------------------------------------------
-void CBaseObject::OnAddSapper( void )
+void CBaseObject::OnAddSapper(void)
 {
 	// Assume we can only build 1 sapper per object
-	Assert( m_bHasSapper == false );
+	Assert(m_bHasSapper == false);
 
 	m_bHasSapper = true;
 
-	CTFPlayer *pPlayer = GetBuilder();
+	CTFPlayer* pPlayer = GetBuilder();
 
-	if ( pPlayer )
-	{
-		//pPlayer->HintMessage( HINT_OBJECT_YOUR_OBJECT_SAPPED, true );
-		pPlayer->SpeakConceptIfAllowed( MP_CONCEPT_SPY_SAPPER, GetResponseRulesModifier() );
+	int doRandomTeleport = 0;
+	CALL_ATTRIB_HOOK_INT_ON_OTHER(GetSapper()->GetBuilder()->Weapon_GetWeaponByType(TF_WPN_TYPE_BUILDING), doRandomTeleport, sapper_random_teleport_position);
+	Msg("%d", doRandomTeleport);
+
+	if (!doRandomTeleport) {
+		if (pPlayer)
+		{
+			//pPlayer->HintMessage( HINT_OBJECT_YOUR_OBJECT_SAPPED, true );
+			pPlayer->SpeakConceptIfAllowed(MP_CONCEPT_SPY_SAPPER, GetResponseRulesModifier());
+		}
+
+		UpdateDisabledState();
 	}
-
-	UpdateDisabledState();
 }
 
 //-----------------------------------------------------------------------------

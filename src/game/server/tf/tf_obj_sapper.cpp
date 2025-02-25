@@ -188,13 +188,13 @@ void CObjectSapper::FinishedBuilding( void )
 	{
 		if ( GetParentObject() )
 		{
-			int doRandomTeleport = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(GetBuilder()->Weapon_GetWeaponByType(TF_WPN_TYPE_BUILDING), doRandomTeleport, sapper_random_teleport_position);
-			Msg("obj_sapper: %d", doRandomTeleport);
-			if (!doRandomTeleport)
-			{
-				GetParentObject()->OnAddSapper();
-			}
+			//int doRandomTeleport = 0;
+			//CALL_ATTRIB_HOOK_INT_ON_OTHER(GetBuilder()->Weapon_GetWeaponByType(TF_WPN_TYPE_BUILDING), doRandomTeleport, sapper_random_teleport_position);
+			//Msg("obj_sapper: %d", doRandomTeleport);
+			//if (!doRandomTeleport)
+			//{
+			GetParentObject()->OnAddSapper();
+			//}
 			CBaseObject *pObject = dynamic_cast<CBaseObject *>( m_hBuiltOnEntity.Get() );
 			if ( pObject )
 			{
