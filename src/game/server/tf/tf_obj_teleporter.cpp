@@ -84,6 +84,47 @@ ConVar tf_teleporter_fov_time( "tf_teleporter_fov_time", "0.5", FCVAR_CHEAT | FC
 
 LINK_ENTITY_TO_CLASS( obj_teleporter, CObjectTeleporter );
 
+static bool isPlacementValid(const Vector& newPosition)
+{
+	trace_t tr;
+	UTIL_TraceHull(newPosition, newPosition, VEC_DUCK_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, NULL, COLLISION_GROUP_PLAYER_MOVEMENT, &tr);
+
+	// Проверка, что координаты не находятся внутри текстур
+	if (tr.startsolid)
+	{
+		return false;
+	}
+
+	return tr.fraction == 1.0f;
+}
+
+static Vector findValidPlacement()
+{
+	Vector newPosition;
+	int attempts = 0;
+	const int maxAttempts = 1000; // Максимальное количество попыток
+
+	do
+	{
+		int new_position_x = RandomInt(-20000, 20000);
+		int new_position_y = RandomInt(-20000, 20000);
+		int new_position_z = RandomInt(-1000, 20000);
+
+		newPosition = Vector(new_position_x, new_position_y, new_position_z);
+		Msg("%d, %d, %d\n", new_position_x, new_position_y, new_position_z);
+		attempts++;
+	} while (!isPlacementValid(newPosition) && attempts < maxAttempts);
+
+	if (attempts >= maxAttempts)
+	{
+		//Msg("Defaulting to 0,0,0");
+		return Vector(0, 0, 0);
+	}
+
+	return newPosition;
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: Teleport the passed player to our destination
 //-----------------------------------------------------------------------------
@@ -920,9 +961,21 @@ void CObjectTeleporter::RecieveTeleportingPlayer( CTFPlayer* pTeleportingPlayer 
 	if ( !pTeleportingPlayer || IsMarkedForDeletion() )
 		return;
 
-	// get the position we'll move the player to
-	Vector newPosition = GetAbsOrigin();
-	newPosition.z += TELEPORTER_MAXS.z + 1;
+	Vector newPosition;
+
+	int doRandomTeleport = 1;
+	Msg("Teleport: %d\n", doRandomTeleport);
+
+	if (doRandomTeleport)
+	{
+		newPosition = findValidPlacement();
+	}else
+	{
+		newPosition = GetAbsOrigin();
+		newPosition.z += TELEPORTER_MAXS.z + 1;
+	}
+
+	CTFPlayer* pPlayer = GetBuilder();
 
 	// Telefrag anyone in the way
 	CBaseEntity *pEnts[256];
