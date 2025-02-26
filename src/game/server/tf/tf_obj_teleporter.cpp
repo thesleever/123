@@ -966,10 +966,11 @@ void CObjectTeleporter::RecieveTeleportingPlayer( CTFPlayer* pTeleportingPlayer 
 	int doRandomTeleport = 0;
 
 	if (HasSapper()) {
-		const char* pName = GetSapper()->GetBuilder()->GetPlayerName();
-		CTFWeaponBase* pSapper = GetSapper()->GetBuilder()->Weapon_GetWeaponByType(TF_WPN_TYPE_BUILDING);
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(pSapper, doRandomTeleport, sapper_random_teleport_position);
-		Msg("PlayerName: %s\nSapper: %s\n", pName, pSapper->GetClassname());
+		CBaseObject* pSapper = GetObjectOfTypeOnMe(OBJ_ATTACHMENT_SAPPER);
+		const char* pName = pSapper->GetBuilder()->GetPlayerName();
+		CTFWeaponBase* wSapper = pSapper->GetBuilder()->Weapon_GetWeaponByType(TF_WPN_TYPE_BUILDING);
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(wSapper, doRandomTeleport, sapper_random_teleport_position);
+		Msg("PlayerName: %s\nSapper: %s\n", pName, wSapper->GetClassname());
 	}
 	if (doRandomTeleport)
 	{
